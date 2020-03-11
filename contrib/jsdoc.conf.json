@@ -1,0 +1,24 @@
+{
+	"plugins" : [],
+	"recurseDepth" : 3,
+	"source" : {
+		"include" : ["./src"],
+        "includePattern": ".+\\.js(doc|x)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+	},
+	"tags": {
+		"allowUnknownTags" : true,
+        "dictionaries": ["jsdoc","closure"]
+	},
+	"opts" : {
+		"destination": "./docs/"
+	},
+    "templates": {
+
+        "systemName": "tx-conversion-js",
+        "includeDate": "true",
+        "footer": "<a href='https://github.com/WebOfTrustInfo/txref-conversion-js/issues'>Issues</a>",
+        "linenums": "true"
+
+    }
+}

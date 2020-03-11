@@ -3,7 +3,7 @@
 let assert = require('chai').assert;
 let expect = require('chai').expect;
 
-let txrefConverter = require('./txrefConverter');
+let txrefConverter = require('../src/txrefConverter');
 
 
 describe('Txref tests', function () {

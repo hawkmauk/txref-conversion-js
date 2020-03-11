@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/**
+ * @module bech32
+ */
 var CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 var GENERATOR = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
 var M = 0x3FFFFFFF;
@@ -25,8 +28,24 @@ var M = 0x3FFFFFFF;
 module.exports = {
   decode: decode,
   encode: encode,
+  setConstant: setConstant,
 };
 
+/**
+ * Modify the constant used in the checksum.  This was initially set to '1'
+ * but was changed to the current default of 0x3FFFFFFF as a result of the study
+ * by Pieter Wuille https://gist.github.com/sipa/a9845b37c1b298a7301c33a04090b2eb
+ *
+ * Here we provide a method to modify the value back to '1'.
+ * 
+ * @param { 1 | 0x3FFFFFFF } value - the constant to be used in generating checksum
+ */
+function setConstant (value) {
+  if (value !== 1 && value !== 0x3FFFFFF){
+          throw 'Invalid Value'
+  }
+  M = value
+}
 
 function polymod (values) {
   var chk = 1;
@@ -69,6 +88,13 @@ function createChecksum (hrp, data) {
   return ret;
 }
 
+/**
+ * Encode data in bech32 format
+ *
+ * @param { Bech32hrp } hrp - Human Readable Part of bech32 string
+ *
+ * @param { binary[] } data - Data part of the bech32 string
+ */
 function encode (hrp, data) {
   var combined = data.concat(createChecksum(hrp, data));
   var ret = hrp + '1';
@@ -78,6 +104,12 @@ function encode (hrp, data) {
   return ret;
 }
 
+/**
+ * Decode bech32 formatted data
+ *
+ * @param { string } bechString - bech32 encoded string
+ *
+ */
 function decode (bechString) {
   var p;
   var has_lower = false;
