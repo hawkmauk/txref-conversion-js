@@ -23,15 +23,19 @@ class BlockcypherDao{
 		}
 	}
 
-	get(txid){
-		const getJson = bent('json')
-		const url = `${BLOCKCYPHER_URL_BASE}/${this.chain}/txs/${txid}`
-		console.log(url)
-		try{
-			return getJson(url)
-		} catch (e) {
-			console.log('Error: ', e)
-		}
+	async getTx(txid) {
+
+		return new Promise((resolve,reject) => {
+			const getJson = bent('json')
+			const url = `${BlockcypherDao.URL_BASE}/${this.chain}/txs/${txid}`
+			getJson(url)
+				.then((tx) => {
+					resolve(tx)
+			})
+			.catch((e) => {
+				reject('Transaction not found')
+			})
+		})
 	}
 
 }
