@@ -1,10 +1,5 @@
-const requests = require('requests')
-var promisifiedRequests = require('./promisifiedRequests');
-
+const Dao = require('./blockcypherDao')
 var bech32 = require('./bech32');
-
-var BTC_URL_MAINNET = 'https://api.blockcypher.com/v1/btc'
-var BTC_URL_TESTNET = 'https://api.blockcypher.com/v1/test3'
 
 let MAGIC_BTC_MAINNET = 0x03;
 let MAGIC_BTC_MAINNET_EXTENDED = 0x04;
@@ -14,11 +9,9 @@ let MAGIC_BTC_TESTNET_EXTENDED = 0x07;
 let TXREF_BECH32_HRP_MAINNET = "tx";
 let TXREF_BECH32_HRP_TESTNET = "txtest";
 
-let CHAIN_MAINNET = "mainnet";
-let CHAIN_TESTNET = "testnet";
 
 
-/*
+/**
  * Encode transaction location data into a txref
  * 
  * @param {string} [mainnet|testnet]
@@ -101,7 +94,7 @@ var txrefEncode = function (chain, blockHeight, txPos, utxoIndex) {
 };
 
 
-/*
+/**
  * Decode txref to transaction data
  * 
  * @param {string} [type="txref"]
@@ -158,36 +151,6 @@ var txrefDecode = function (bech32Tx) {
   };
 };
 
-/*
- * Get the transaction details from an oracle
- *
- * @param {string} [type="transaction"]
- * 	The transaction id
- *
- * @param {string} [type="blockchain"]
- * 	The name of the blockchain [mainnet|testnet]
- *
- * @param {Number}
- * 	The utxoIndex value ?
- */
-const getTxDetails = async (txid, chain, utxoIndex) => {
-
-  var theUrl;
-  if (chain === CHAIN_MAINNET) {
-    theUrl = `https://api.blockcypher.com/v1/btc/main/txs/${txid}?limit=500`;
-  } else {
-    theUrl = `https://api.blockcypher.com/v1/btc/test3/txs/${txid}?limit=500`;
-  }
-
-  return promisifiedRequests.request({url: theUrl})
-    .then(data => {
-      let txData = JSON.parse(data);
-      return parseTxDetails(txData, chain, txid, utxoIndex);
-    }, error => {
-      console.error(error);
-      throw error;
-    });
-}
 
 /*
  * Parse the transaction location data
@@ -240,18 +203,15 @@ var parseTxDetails = function (txData, chain, txid, utxoIndex) {
 };
 
 
+const txidToTxref = async (txid, chain, utxoIndex) => {
 
-
-
-var txidToTxref = function (txid, chain, utxoIndex) {
-  return getTxDetails(txid, chain, utxoIndex)
-    .then(data => {
-      var result = txrefEncode(chain, data.blockHeight, data.blockIndex, data.utxoIndex);
-      return result
-    }, error => {
-      console.error(error);
-      throw error;
-    });
+  const dao = new Dao()
+  dao.getTx(txid)
+  	.then((tx) => return txrefEncode('testnet', tx.blockHeight, tx.blockIndex, tx.utxoIndex))
+	.catch((err) => {
+		console,error(err)
+		throw err;
+	}
 }
 
 

@@ -1,6 +1,9 @@
 const bent = require('bent')
 
 
+/**
+ * This class handles Data Access from the blockcypher API
+ */
 class BlockcypherDao{
 
 
@@ -9,7 +12,13 @@ class BlockcypherDao{
 
 	static URL_BASE = 'https://api.blockcypher.com/v1/btc'
 
-	//make the default chain testnet
+	/**
+	 * Creates an instance of the BlockcypherDao
+	 *
+	 * @param {string} chain
+	 * 	The chain should be set using one of the class variable
+	 * 	CHAIN_MAINNET or CHAIN_TESTNET
+	 */
 	constructor( chain = BlockcypherDao.CHAIN_TESTNET ){
 		
 		// Test for valid chain
@@ -23,6 +32,15 @@ class BlockcypherDao{
 		}
 	}
 
+	/**
+	 * Returns a transaction object
+	 *
+	 * @param {string} [type='transactionId'] txid
+	 * 	The transaction id of the transaction to be returned
+	 *
+	 * @return {Object}
+	 * 	The transaction with the given transactionId
+	 */
 	async getTx(txid) {
 
 		return new Promise((resolve,reject) => {

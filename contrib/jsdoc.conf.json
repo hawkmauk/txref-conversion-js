@@ -1,0 +1,13 @@
+{
+	"plugins" : [],
+	"recurseDpth" : 3,
+	"source" : {
+		"include" : ["./src"]
+	},
+	"tags": {
+		"allowUnknownTags" : true
+	},
+	"opts" : {
+		"destination": "./doc"
+	}
+}
