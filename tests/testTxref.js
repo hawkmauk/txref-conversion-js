@@ -1,6 +1,12 @@
 const expect = require('chai').expect
 const assert = require('chai').assert
 const Txref = require('../src/txref')
+const valid_testnet = {
+	chain: Txref.CHAIN_TESTNET,
+	blockHeigth: 1201739,
+	blockIndex: 2,
+	txref: '8kyt-fzzq-qqqq-ase0-d8'
+}
 
 describe('Txref',() => {
 
@@ -34,8 +40,11 @@ describe('Txref',() => {
 		})
 
 		it('should return a testnet txref', () => {
-			const txref = Txref.encode(Txref.CHAIN_TESTNET,1201739,2)
-			expect(txref).to.equal('8kyt-fzzq-qqqq-ase0-d8')
+			const txref = Txref.encode(
+				valid_testnet.chain,
+				valid_testnet.blockheight,
+				valid_testnet.blockIndex)
+			expect(txref).to.equal(valid_testnet.txref)
 		})
 
 	})
