@@ -161,6 +161,62 @@ class Txref{
 
 		return txref
 	}
+
+
+	/**
+	 * Convert a txref to ttransaction data
+	 *
+	 * @param {Txref} txref
+	 *
+	 * @return {{chain, blockHeight, blockIndex, utxoIndex}}
+	 * 	The transaction data encoded in the txref
+	 */
+	static decode(txref){
+
+		let chain, blockHeight, blockIndex, utxoIndex
+
+		//check for valid txref
+		if (! txref.match(/^tx(test)?1:[a-z0-9]{4}(-[a-z0-9]{4}){2}/g)){
+			throw new Error('Invalid txref')
+		}
+
+		//strip the delimiter formatting
+		const unformattedTxref = txref.replace(/[-:]/g, '')
+
+		//convert the string to binary data
+		const bTxref = bech32.decode(unformattedTxref)
+
+		//decode the blockHeight
+		blockHeight = (bTxref.data[1] >> 1)
+		blockHeight |= (bTxref.data[2] << 4)
+		blockHeight |= (bTxref.data[3] << 9)
+		blockHeight |= (bTxref.data[4] << 14)
+		blockHeight |= (bTxref.data[5] << 19)
+
+		//decode the blockIndex
+		blockIndex = bTxref.data[6]
+		blockIndex |= (bTxref.data[7] << 5)
+		blockIndex |= (bTxref.data[8] << 10)
+
+		//decode the utxoIndex
+		if(bTxref.data.length == 12){
+			utxoIndex = bTxref.data[9]
+			utxoIndex |= (bTxref.data[10] << 5)
+			utxoIndex |= (bTxref.data[11] << 10)
+		}
+
+		//decode the chain
+		(bTxref.hrp === Txref.BECH32_HRP_MAINNET) ?
+			chain = Txref.CHAIN_MAINNET : chain = Txref.CHAIN_TESTNET
+
+		return {
+			chain,
+			blockHeight,
+			blockIndex,
+			utxoIndex
+		}
+
+	}
 }
 
 module.exports = Txref

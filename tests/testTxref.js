@@ -144,18 +144,33 @@ describe('Txref',() => {
 				})
 		})
 
+
+	})
+
+	describe('Txref.decode',() => {
+
+		it('should throw an error on invalid txref', () => {
+			try{
+				Txref.decode('invalid')
+				return false
+			}catch(e){
+				expect(e.message).to.equal('Invalid txref')
+			}
+		})
+		
 		//Run test data throught the decode function
 		testData.forEach((test) => {
 				it('decode ' + test.name, () => {
 					const data = Txref.decode(test.txref)
-					expect(data).to.contain({
-						chain: test.chain,
-						blockHeight: test.blockHeight,
-						blockIndex: test.BlockIndex,
-						test: utxoIndex
+					expect(data).to.eql({
+						'chain': test.chain,
+						'blockHeight': test.blockHeight,
+						'blockIndex': test.blockIndex,
+						'utxoIndex': test.utxoIndex
 					})
 				})
 		})
+
 	})
 })
 

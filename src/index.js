@@ -10,11 +10,15 @@
 //}
 
 const Txref = require('./txref')
-console.log(Txref.encode('mainnet',0,0))
-console.log(Txref.encode('mainnet',1,0))
-console.log(Txref.encode('mainnet',2097151,1000))
+//console.log(Txref.encode('mainnet',0,0))
+//console.log(Txref.encode('mainnet',1,0))
+//console.log(Txref.encode('mainnet',2097151,1000))
+console.log(Txref.decode('tx1:r7ll-lrgl-ql0m-ykh'))
 
 const encode = require('./txrefConverter').txrefEncode
-console.log(encode('mainnet',0,0))
-console.log(encode('mainnet',1,0))
-console.log(encode('mainnet',2097151,1000))
+//console.log(encode('mainnet',0,0))
+//console.log(encode('mainnet',1,0))
+//console.log(encode('mainnet',2097151,1000))
+
+const decode = require('./txrefConverter').txrefDecode
+console.log(decode('tx1:r7ll-lrgl-ql0m-ykh'))
