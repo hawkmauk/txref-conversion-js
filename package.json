@@ -18,7 +18,7 @@
     "build": "browserify txrefConverter.js --s BtcrUtils -t [ babelify --presets [ es2015 ] ] -o txrefConverter-browserified.js",
     "uglify": "uglifyjs bundle.js --compress --mangle --output txrefConverter.js",
     "dev": "nodemon src/index.js -e js",
-    "doc": "./node_modules/jsdoc/jsdoc.js -c contrib/jsdoc.conf.js"
+    "doc": "./node_modules/jsdoc/jsdoc.js -c contrib/jsdoc.conf.json"
   },
   "author": "Kim Hamilton Duffy",
   "license": "MIT",

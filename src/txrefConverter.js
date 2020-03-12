@@ -1,5 +1,5 @@
-const Dao = require('./blockcypherDao')
 var bech32 = require('./bech32');
+var promisifiedRequests = require('./promisifiedRequests');
 
 let MAGIC_BTC_MAINNET = 0x03;
 let MAGIC_BTC_MAINNET_EXTENDED = 0x04;
@@ -9,23 +9,11 @@ let MAGIC_BTC_TESTNET_EXTENDED = 0x07;
 let TXREF_BECH32_HRP_MAINNET = "tx";
 let TXREF_BECH32_HRP_TESTNET = "txtest";
 
+let CHAIN_MAINNET = "mainnet";
+let CHAIN_TESTNET = "testnet";
 
 
-/**
- * Encode transaction location data into a txref
- * 
- * @param {string} [mainnet|testnet]
- * 	chain The name of the btc chain
- * @param {Number}
- * 	The block in which the transaction is found
- * @param {Number}
- * 	The position in the block where the transaction is found
- * @param {Number}
- * 	utxoIndex ?
- * 
- * @returns {string}
- * 	txref The bech32 txref
- */
+
 var txrefEncode = function (chain, blockHeight, txPos, utxoIndex) {
   let prefix = chain === CHAIN_MAINNET ? TXREF_BECH32_HRP_MAINNET : TXREF_BECH32_HRP_TESTNET;
   let nonStandard = chain != CHAIN_MAINNET;
@@ -75,6 +63,8 @@ var txrefEncode = function (chain, blockHeight, txPos, utxoIndex) {
     shortId[11] |= ((utxoIndex & 0x7C00) >> 10);
   }
 
+  console.log(shortId)
+
   let result = bech32.encode(prefix, shortId);
 
   let origLength = result.length;
@@ -93,15 +83,6 @@ var txrefEncode = function (chain, blockHeight, txPos, utxoIndex) {
   return finalResult;
 };
 
-
-/**
- * Decode txref to transaction data
- * 
- * @param {string} [type="txref"]
- * 	txref The txref to decode
- * @return {{blockHeight: Number, blockIndex: Number, chain: String, utxoIndex:Number}}
- * 	The decoded transaction location from the txref
- */
 var txrefDecode = function (bech32Tx) {
   let stripped = bech32Tx.replace(/-/g, '');
   stripped = stripped.replace(/:/g, '');
@@ -151,21 +132,6 @@ var txrefDecode = function (bech32Tx) {
   };
 };
 
-
-/*
- * Parse the transaction location data
- *
- * @param {{block_hash: string, block_height: Number, block_index: Number, inputs: { script: string, addresses: string, output_value: string, prev_hash: string}}}
- * 	The data describing the location of the transaction
- * @param {string}
- * 	The blockchain that the transaction is recorded in
- * @param {string}
- * 	The transaction id
- * @param {Number}
- * 	The utxoIndex of the transaction
- *
- * @return {{script: string, dataHex: binary, dataString: string, outputValue: Number}}
- */
 var parseTxDetails = function (txData, chain, txid, utxoIndex) {
   let blockHash = txData.block_hash;
   let blockHeight = txData.block_height;
@@ -202,16 +168,35 @@ var parseTxDetails = function (txData, chain, txid, utxoIndex) {
   };
 };
 
+function getTxDetails(txid, chain, utxoIndex) {
 
-const txidToTxref = async (txid, chain, utxoIndex) => {
+  var theUrl;
+  if (chain === CHAIN_MAINNET) {
+    theUrl = `https://api.blockcypher.com/v1/btc/main/txs/${txid}?limit=500`;
+  } else {
+    theUrl = `https://api.blockcypher.com/v1/btc/test3/txs/${txid}?limit=500`;
+  }
 
-  const dao = new Dao()
-  dao.getTx(txid)
-  	.then((tx) => return txrefEncode('testnet', tx.blockHeight, tx.blockIndex, tx.utxoIndex))
-	.catch((err) => {
-		console,error(err)
-		throw err;
-	}
+  return promisifiedRequests.request({url: theUrl})
+    .then(data => {
+      let txData = JSON.parse(data);
+      return parseTxDetails(txData, chain, txid, utxoIndex);
+    }, error => {
+      console.error(error);
+      throw error;
+    });
+}
+
+
+var txidToTxref = function (txid, chain, utxoIndex) {
+  return getTxDetails(txid, chain, utxoIndex)
+    .then(data => {
+      var result = txrefEncode(chain, data.blockHeight, data.blockIndex, data.utxoIndex);
+      return result
+    }, error => {
+      console.error(error);
+      throw error;
+    });
 }
 
 
