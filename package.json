@@ -14,7 +14,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "scripts": {
-    "test": "mocha tests/test*.js",
+    "test": "mocha test/test*.js -R progress",
     "build": "browserify txrefConverter.js --s BtcrUtils -t [ babelify --presets [ es2015 ] ] -o txrefConverter-browserified.js",
     "uglify": "uglifyjs bundle.js --compress --mangle --output txrefConverter.js",
     "dev": "nodemon src/index.js -e js",

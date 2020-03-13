@@ -9,7 +9,7 @@ const tx = [
 	txid: undefined,
 	utxoIndex: undefined
 },{
-	name: 'a mainnet tx with block height 1 and pos 0',
+	name: 'a mainnet tx with block height 1 and pos 0 and txid of 0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098',
 	chain: Txref.CHAIN_MAINNET,
 	blockHeight: 1,
 	blockIndex: 0,
@@ -49,7 +49,7 @@ const tx = [
 	txid: undefined,
 	utxoIndex: undefined
 },{
-	name: 'a mainnet tx with block height 467883 and pos 2355',
+	name: 'a mainnet tx with block height 467883 and pos 2355 and txid of 016b71d9ec62709656504f1282bb81f7acf998df025e54bd68ea33129d8a425b',
 	chain: Txref.CHAIN_MAINNET,
 	blockHeight: 467883,
 	blockIndex: 2355,
@@ -78,7 +78,7 @@ const tx = [
 	blockHeight: 466793,
 	blockIndex: 2205,
 	txref: 'tx1:rjk0-uqay-z0u3-gl8',
-	txid: '773fc4e393f6f090eab6a3c9b5b48abb7086e9477274db3047a795f5e4f7dc83',
+	txid: undefined,
 	utxoIndex: undefined
 },{
 	name: 'a mainnet tx with block height 0 and pos 0x7FFF',
@@ -121,7 +121,7 @@ const tx = [
 	txid: undefined,
 	utxoIndex: undefined
 },{
-	name: 'a testnet tx with block height 1152194 and pos 1',
+	name: 'a testnet tx with block height 1152194 and pos 1 and txid of f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107',
 	chain: Txref.CHAIN_TESTNET,
 	blockHeight: 1152194,
 	blockIndex: 1,

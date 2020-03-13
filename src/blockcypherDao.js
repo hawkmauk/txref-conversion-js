@@ -7,9 +7,8 @@ const Txref = require('./txref')
 class BlockcypherDao{
 
 
-	static CHAIN_MAINNET = 'main'
-	static CHAIN_TESTNET = 'test3'
-
+	static CHAIN_MAINNET = Txref.CHAIN_MAINNET
+	static CHAIN_TESTNET = Txref.CHAIN_TESTNET
 	static URL_BASE = 'https://api.blockcypher.com/v1/btc'
 
 	/**
@@ -43,37 +42,32 @@ class BlockcypherDao{
 	 */
 	async getTx(txid) {
 
-		return new Promise((resolve,reject) => {
+			//format the url chain identifier
+			let urlChain
+			(this.chain === BlockcypherDao.CHAIN_MAINNET) ? urlChain = 'main' : urlChain = 'test3'
+			//format the url
+			const url = `${BlockcypherDao.URL_BASE}/${urlChain}/txs/${txid}`
+			//return the json data
 			const getJson = bent('json')
-			const url = `${BlockcypherDao.URL_BASE}/${this.chain}/txs/${txid}`
-			getJson(url)
-				.then((tx) => {
-					resolve(tx)
-			})
-			.catch((e) => {
-				reject('Transaction not found')
-			})
-		})
+			const tx = await getJson(url)
+			return tx
+	
 	}
 
 	/**
 	 * Return a txref from a txid
+	 *
+	 * @param {string} txid
+	 *
+	 * @return {string} txref
 	 */
 	async getTxref(txid) {
 		
-		return new Promise((resolve,reject) => {
-			
 			//get the tx data from dao
-			getTx(txid)
-				.then((tx) => {
-					//convert the tx to a txref
-					const txref = Txref.encode(this.chain, tx.block_height, tx.block_Index)
-					resolve(txref)
-				})
-				.catch((e) => {
-					reject(e)
-				})
-		})
+			const tx = await this.getTx(txid)
+			//convert the tx to a txref
+			const txref = Txref.encode(this.chain, tx.block_height, tx.block_index)
+			return txref
 
 	}
 

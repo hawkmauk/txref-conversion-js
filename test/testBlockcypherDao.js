@@ -56,23 +56,25 @@ describe('BlockcypherDao tests', () => {
 				})
 				.catch((reject) => {
 					expect(reject).to.equal('Transaction not found')
+					done()
 				})
 		})
 	})
 
 	describe('getTxref', () => {
 
-		//initialise the dao
-		const dao = new Dao
 
 		//for each tx in testdata
 		testData.forEach((test) => {
 
-			//if there is a txid
-			if (test.txid !== undefined) {
-				it('get Txref for '+ test.name, () => {
-					const txref = dao.getTxref(test.txid)
-					expect(txref).to.equal(test.txref)
+			//initialise the dao
+			const dao = new Dao(test.chain)
+
+			//only run for data with a txid
+			if(test.txid !== undefined){
+
+				it('get Txref for '+ test.name, async () => {
+					expect(await dao.getTxref(test.txid)).to.equal(test.txref)
 				})
 			}
 		})
