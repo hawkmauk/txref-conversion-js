@@ -59,4 +59,12 @@ describe('BlockcypherDao tests', () => {
 		})
 	})
 
+	describe('getTxref', () => {
+
+		it('returns a txref',(async ) => {
+			return true
+		})
+
+	})
+
 })

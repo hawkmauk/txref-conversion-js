@@ -1,5 +1,5 @@
 const bent = require('bent')
-
+const Txref = require('./txref')
 
 /**
  * This class handles Data Access from the blockcypher API
@@ -54,6 +54,27 @@ class BlockcypherDao{
 				reject('Transaction not found')
 			})
 		})
+	}
+
+	/**
+	 * Return a txref from a txid
+	 */
+	async getTxref(txid) {
+		
+		return new Promise((resolve,reject) => {
+			
+			//get the tx data from dao
+			getTx(txid)
+				.then((tx) => {
+					//convert the tx to a txref
+					const txref = Txref.encode(this.chain, tx.block_height, tx.block_Index)
+					resolve(txref)
+				})
+				.catch((e) => {
+					reject(e)
+				})
+		})
+
 	}
 
 }
