@@ -2,6 +2,7 @@ const chai = require('chai')
 const expect = chai.expect
 
 const Dao = require('../src/blockcypherDao')
+const testData = require('./data')
 
 const testnet_txid = 'a580cc76ac9a5eaed45a1fd6118db7def823e847cf321a98d3dfb7d6e24f2b9c'
 const testnet_txid_blockhash = '000000007c978d260c15e20bfa8593e904c0ca206600278ecfdd1dd72aeb08c9'
@@ -61,8 +62,19 @@ describe('BlockcypherDao tests', () => {
 
 	describe('getTxref', () => {
 
-		it('returns a txref',(async ) => {
-			return true
+		//initialise the dao
+		const dao = new Dao
+
+		//for each tx in testdata
+		testData.forEach((test) => {
+
+			//if there is a txid
+			if (test.txid !== undefined) {
+				it('get Txref for '+ test.name, () => {
+					const txref = dao.getTxref(test.txid)
+					expect(txref).to.equal(test.txref)
+				})
+			}
 		})
 
 	})
