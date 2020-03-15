@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const Dao = require('../src/blockcypherDao')
+const Dao = require('../src/dao/blockcypherDao')
 const testData = require('./data')
 
 const testnet_txid = 'a580cc76ac9a5eaed45a1fd6118db7def823e847cf321a98d3dfb7d6e24f2b9c'
@@ -56,7 +56,6 @@ describe('BlockcypherDao tests', () => {
 				})
 				.catch((reject) => {
 					expect(reject).to.equal('Transaction not found')
-					done()
 				})
 		})
 	})

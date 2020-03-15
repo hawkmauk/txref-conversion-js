@@ -1,10 +1,11 @@
 const bent = require('bent')
-const Txref = require('./txref')
+const AbstractDao = require('./abstractDao')
+const Txref = require('../txref')
 
 /**
  * This class handles Data Access from the blockcypher API
  */
-class BlockcypherDao{
+class BlockcypherDao extends AbstractDao{
 
 
 	static CHAIN_MAINNET = Txref.CHAIN_MAINNET
@@ -20,6 +21,9 @@ class BlockcypherDao{
 	 */
 	constructor( chain = BlockcypherDao.CHAIN_TESTNET ){
 		
+		// Call the AbstractDao constructor
+		super(chain)
+
 		// Test for valid chain
 		if (
 			chain === BlockcypherDao.CHAIN_MAINNET ||
@@ -31,28 +35,6 @@ class BlockcypherDao{
 		}
 	}
 
-	/**
-	 * Returns a transaction object
-	 *
-	 * @param {string} [type='transactionId'] txid
-	 * 	The transaction id of the transaction to be returned
-	 *
-	 * @return {Object}
-	 * 	The transaction with the given transactionId
-	 */
-	async getTx(txid) {
-
-			//format the url chain identifier
-			let urlChain
-			(this.chain === BlockcypherDao.CHAIN_MAINNET) ? urlChain = 'main' : urlChain = 'test3'
-			//format the url
-			const url = `${BlockcypherDao.URL_BASE}/${urlChain}/txs/${txid}`
-			//return the json data
-			const getJson = bent('json')
-			const tx = await getJson(url)
-			return tx
-	
-	}
 
 	/**
 	 * Return a txref from a txid
@@ -70,6 +52,41 @@ class BlockcypherDao{
 			return txref
 
 	}
+
+	/**
+	 * Return a txid from a txref
+	 *
+	 * @param {string} txref
+	 *
+	 * @return {string} txid
+	 */
+	async getTxid(txref){
+
+		return false
+	}
+
+}
+
+/**
+ * Returns a transaction object
+ *
+ * @param {string} [type='transactionId'] txid
+ * 	The transaction id of the transaction to be returned
+ *
+ * @return {Object}
+ * 	The transaction with the given transactionId
+ */
+BlockcypherDao.prototype.getTx = async (txid) => {
+
+		//format the url chain identifier
+		let urlChain
+		(this.chain === BlockcypherDao.CHAIN_MAINNET) ? urlChain = 'main' : urlChain = 'test3'
+		//format the url
+		const url = `${BlockcypherDao.URL_BASE}/${urlChain}/txs/${txid}`
+		//return the json data
+		const getJson = bent('json')
+		const tx = await getJson(url)
+		return tx
 
 }
 

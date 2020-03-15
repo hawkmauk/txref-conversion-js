@@ -1,4 +1,4 @@
-const Dao = require('./blockcypherDao')
+const Dao = require('./dao/blockcypherDao')
 const testData = require('../test/data')
 
 const mainnet_txid = 'ae121ed0b1fd651f57605aebcebbfb6f644c2f5a05a95bb2ff4bb7f860249451'
