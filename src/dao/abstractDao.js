@@ -30,6 +30,7 @@ class AbstractDao {
 	getTx(txid) {
 		throw new Error('not implemented')
 	}
+	
 
 }
 

@@ -1,30 +1,26 @@
 const chai = require('chai')
 const expect = chai.expect
 
+const Blockchain = require('../src/blockchain')
 const Dao = require('../src/dao/blockcypherDao')
 const testData = require('./data')
-
-const testnet_txid = 'a580cc76ac9a5eaed45a1fd6118db7def823e847cf321a98d3dfb7d6e24f2b9c'
-const testnet_txid_blockhash = '000000007c978d260c15e20bfa8593e904c0ca206600278ecfdd1dd72aeb08c9'
-const mainnet_txid = 'ae121ed0b1fd651f57605aebcebbfb6f644c2f5a05a95bb2ff4bb7f860249451'
-const mainnet_txid_blockhash = '00000000000000000001c297dd7f7efd115bf9fe3fe54838ccbed38ebc7e68a3'
 
 describe('BlockcypherDao tests', () => {
 
 	describe('constructor', () => {
 		it('defaults to testnet', () => {
 			const dao = new Dao()
-			expect(dao.chain).to.equal(Dao.CHAIN_TESTNET)
+			expect(dao.chain).to.equal(Blockchain.BTC_TESTNET)
 		})
 
 		it('can be set to mainnet', () => {
-			const dao = new Dao(Dao.CHAIN_MAINNET)
-			expect(dao.chain).to.equal(Dao.CHAIN_MAINNET)
+			const dao = new Dao(Blockchain.BTC_MAINNET)
+			expect(dao.chain).to.equal(Blockchain.BTC_MAINNET)
 		})
 
 		it('can be set to testnet', () => {
-			const dao = new Dao(Dao.CHAIN_TESTNET)
-			expect(dao.chain).to.equal(Dao.CHAIN_TESTNET)
+			const dao = new Dao(Blockchain.BTC_TESTNET)
+			expect(dao.chain).to.equal(Blockchain.BTC_TESTNET)
 		})
 
 		it('thows error on invald chain', () => {
@@ -34,22 +30,10 @@ describe('BlockcypherDao tests', () => {
 
 	describe('getTx', () => {
 
-		it('returns a testnet transaction', async () => {
-			const dao = new Dao()
-			expect(await dao.getTx(testnet_txid)).to.contain(({
-				"block_hash": testnet_txid_blockhash
-			}))
-		})
-
-		it('returns a mainnet transaction', async () => {
-			const dao = new Dao(Dao.CHAIN_MAINNET)
-			expect(await dao.getTx(mainnet_txid)).to.contain(({
-				"block_hash": mainnet_txid_blockhash
-			}))
-		})
-
 		it('promise rejects on invalid transaction', async () => {
-			const dao = new Dao(Dao.CHAIN_MAINNET)
+			const dao = new Dao(Blockchain.BTC_MAINNET)
+			// find a testnet transaction in the test data
+			const testnet_txid = testData.find( tx => tx.chain === Blockchain.BTC_TESTNET )
 			dao.getTx(testnet_txid)
 				.then((resolve) => {
 					expect(resolve).to.be.undefined
@@ -58,10 +42,6 @@ describe('BlockcypherDao tests', () => {
 					expect(reject).to.equal('Transaction not found')
 				})
 		})
-	})
-
-	describe('getTxref', () => {
-
 
 		//for each tx in testdata
 		testData.forEach((test) => {
@@ -72,12 +52,17 @@ describe('BlockcypherDao tests', () => {
 			//only run for data with a txid
 			if(test.txid !== undefined){
 
-				it('get Txref for '+ test.name, async () => {
-					expect(await dao.getTxref(test.txid)).to.equal(test.txref)
+				it('get Tx for '+ test.name, async () => {
+					dao.getTx(test.txid)
+						.then((resolve) => {
+							expect(resolve).should.have.keys('block_height','block_index')
+						})
+						.catch((reject) => {
+							expect(reject).to.be.undefined
+						})
 				})
 			}
 		})
-
 	})
 
 })

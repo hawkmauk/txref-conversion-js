@@ -1,27 +1,34 @@
-const Dao = require('./dao/blockcypherDao')
+const Dao = require('../test/mockDao')
+const BtcrReader = require('./btcrReader')
 const testData = require('../test/data')
 
-const mainnet_txid = 'ae121ed0b1fd651f57605aebcebbfb6f644c2f5a05a95bb2ff4bb7f860249451'
+//for each tx in testdata
+//testData.forEach(async (test) => {
+//
+//	//initialise the dao
+//	const dao = new Dao(test.chain)
+//	//only run for data with a txid
+//	if(test.txid !== undefined){
+//
+//		const tx = await dao.getTx(test.txid)
+//		console.log(tx.block_height)
+//	}
+//})
 
-const maindao = new Dao(Dao.CHAIN_MAINNET)
-const testdao = new Dao(Dao.CHAIN_TESTNET)
+//for each tx in testdata
+testData.forEach(async (test) => {
 
+	//initialise the dao
+	const dao = new Dao(test.chain)
+	const reader = new BtcrReader(dao)
 
-//dao.getTx(mainnet_txid)
-//	.then((tx) => {
-//		console.log(tx)
-//	})
-//	.catch((e) => {
-//		console.log('Error '+e)
-//	})
+	//only run for data with a txid
+	if(test.txid !== undefined){
 
-maindao.getTxref('f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107')
-	.then((res) => {
-		console.log(res)
-	})
-	.catch((e) => {
-	    console.log(e)
-	})
+		const tx = await dao.getTx(test.txid)
+		const txref = await reader.getTxref(test.txid)
+	}
+})
 
 
 const Txref = require('./txref')

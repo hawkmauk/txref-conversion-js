@@ -1,6 +1,6 @@
 const bent = require('bent')
+const Blockchain = require('../blockchain')
 const AbstractDao = require('./abstractDao')
-const Txref = require('../txref')
 
 /**
  * This class handles Data Access from the blockcypher API
@@ -8,64 +8,33 @@ const Txref = require('../txref')
 class BlockcypherDao extends AbstractDao{
 
 
-	static CHAIN_MAINNET = Txref.CHAIN_MAINNET
-	static CHAIN_TESTNET = Txref.CHAIN_TESTNET
 	static URL_BASE = 'https://api.blockcypher.com/v1/btc'
 
 	/**
 	 * Creates an instance of the BlockcypherDao
 	 *
-	 * @param {string} chain
-	 * 	The chain should be set using one of the class variable
-	 * 	CHAIN_MAINNET or CHAIN_TESTNET
+	 * @param {blockchain} chain
+	 * 	The chain should be set using one of the chain variables
 	 */
-	constructor( chain = BlockcypherDao.CHAIN_TESTNET ){
+	constructor( chain = Blockchain.BTC_TESTNET ){
 		
 		// Call the AbstractDao constructor
 		super(chain)
 
 		// Test for valid chain
 		if (
-			chain === BlockcypherDao.CHAIN_MAINNET ||
-			chain === BlockcypherDao.CHAIN_TESTNET
+			chain === Blockchain.BTC_MAINNET ||
+			chain === Blockchain.BTC_TESTNET
 		){
 			this.chain = chain
 		}else{
 			throw new Error(`Invalid chain: ${chain}`)
 		}
 	}
-
-
-	/**
-	 * Return a txref from a txid
-	 *
-	 * @param {string} txid
-	 *
-	 * @return {string} txref
-	 */
-	async getTxref(txid) {
-		
-			//get the tx data from dao
-			const tx = await this.getTx(txid)
-			//convert the tx to a txref
-			const txref = Txref.encode(this.chain, tx.block_height, tx.block_index)
-			return txref
-
-	}
-
-	/**
-	 * Return a txid from a txref
-	 *
-	 * @param {string} txref
-	 *
-	 * @return {string} txid
-	 */
-	async getTxid(txref){
-
-		return false
-	}
-
 }
+
+// Without this the super attributes are not accessable
+Object.setPrototypeOf(BlockcypherDao.prototype, AbstractDao)
 
 /**
  * Returns a transaction object
@@ -76,11 +45,11 @@ class BlockcypherDao extends AbstractDao{
  * @return {Object}
  * 	The transaction with the given transactionId
  */
-BlockcypherDao.prototype.getTx = async (txid) => {
+BlockcypherDao.prototype.getTx = async function(txid){
 
 		//format the url chain identifier
 		let urlChain
-		(this.chain === BlockcypherDao.CHAIN_MAINNET) ? urlChain = 'main' : urlChain = 'test3'
+		(this.chain === Blockchain.BTC_MAINNET) ? urlChain = 'main' : urlChain = 'test3'
 		//format the url
 		const url = `${BlockcypherDao.URL_BASE}/${urlChain}/txs/${txid}`
 		//return the json data

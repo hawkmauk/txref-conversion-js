@@ -1,5 +1,7 @@
 const expect = require('chai').expect
 const assert = require('chai').assert
+
+const Blockchain = require('../src/blockchain')
 const Txref = require('../src/txref')
 const testData = require('./data')
 
@@ -18,7 +20,7 @@ describe('Txref',() => {
 
 		it('should throw an error on invalid block height', () => {
 			try{
-				Txref.encode(Txref.CHAIN_TESTNET)
+				Txref.encode(Blockchain.BTC_TESTNET)
 				return false
 			}catch(e){
 				expect(e.message).to.equal('Invalid block height')
@@ -27,7 +29,7 @@ describe('Txref',() => {
 
 		it('should throw an error on invalid block index', () => {
 			try{
-				Txref.encode(Txref.CHAIN_TESTNET,1000)
+				Txref.encode(Blockchain.BTC_TESTNET,1000)
 				return false
 			}catch(e){
 				expect(e.message).to.equal('Invalid block index')

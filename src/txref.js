@@ -1,4 +1,5 @@
 const bech32 = require('./bech32')
+const Blockchain = require('./blockchain')
 
 const TYPE_MAINNET = 0x03
 const TYPE_MAINNET_EXT = 0x04
@@ -9,12 +10,6 @@ const TYPE_TESTNET_EXT=0x07
  * This class provides functions for Txrefs
  */
 class Txref{
-
-	/**
-	 * Chain identifier
-	 */
-	static CHAIN_MAINNET = 'mainnet'
-	static CHAIN_TESTNET = 'testnet'
 
 	/**
 	 * Human readable part of bech32 data
@@ -40,7 +35,7 @@ class Txref{
 	static encode(chain, blockHeight, blockIndex, utxoIndex){
 		
 		//check for valid chain
-		if (chain !== Txref.CHAIN_MAINNET && chain !== Txref.CHAIN_TESTNET)
+		if (chain !== Blockchain.BTC_MAINNET && chain !== Blockchain.BTC_TESTNET)
 			throw new Error('Invalid chain')
 
 		//check for valid blockHeight
@@ -90,10 +85,10 @@ class Txref{
 
 		//Set the txref type and initialise binary data
 		if(utxoIndex !== undefined){
-			type = (chain === Txref.CHAIN_MAINNET) ? TYPE_MAINNET_EXT : TYPE_TESTNET_EXT
+			type = (chain === Blockchain.BTC_MAINNET) ? TYPE_MAINNET_EXT : TYPE_TESTNET_EXT
 			data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 		} else {
-			type = (chain === Txref.CHAIN_MAINNET) ? TYPE_MAINNET : TYPE_TESTNET
+			type = (chain === Blockchain.BTC_MAINNET) ? TYPE_MAINNET : TYPE_TESTNET
 			data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 		}
 
@@ -207,7 +202,7 @@ class Txref{
 
 		//decode the chain
 		(bTxref.hrp === Txref.BECH32_HRP_MAINNET) ?
-			chain = Txref.CHAIN_MAINNET : chain = Txref.CHAIN_TESTNET
+			chain = Blockchain.BTC_MAINNET : chain = Blockchain.BTC_TESTNET
 
 		return {
 			chain,
