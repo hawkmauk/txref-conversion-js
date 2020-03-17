@@ -93,7 +93,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line11">line 11</a>
+        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line12">line 12</a>
     </li></ul></dd>
     
 
@@ -187,69 +187,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line22">line 22</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="CHAIN_MAINNET"><span class="type-signature"></span>CHAIN_MAINNET<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Chain identifier
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line16">line 16</a>
+        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line19">line 19</a>
     </li></ul></dd>
     
 
@@ -455,7 +393,7 @@ Bytes 9-11: Encodes the utxoIndex
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line87">line 87</a>
+        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line83">line 83</a>
     </li></ul></dd>
     
 
@@ -514,7 +452,7 @@ Bytes 9-11: Encodes the utxoIndex
     
 
     
-    <h4 class="name" id=".binaryToString"><span class="type-signature">(static) </span>binaryToString<span class="signature">(data)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id=".binaryToString"><span class="type-signature">(static) </span>binaryToString<span class="signature">(words)</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -523,7 +461,11 @@ Bytes 9-11: Encodes the utxoIndex
 
 <div class="description">
     Convert binary txref to a bech32 formatted string with
-delimiters to make it more human readable
+delimiters to make it more human readable.
+
+The name 'words' is used throughout in keeping with the Bech32
+naming in object returned from the Bech32 library:
+	`{ prefix: xx, words: xxxxxxx }`
 </div>
 
 
@@ -559,7 +501,7 @@ delimiters to make it more human readable
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>words</code></td>
             
 
             <td class="type">
@@ -575,7 +517,7 @@ delimiters to make it more human readable
 
             
 
-            <td class="description last">The binary encoded txref</td>
+            <td class="description last">The binary encoded bech32 txref.</td>
         </tr>
 
     
@@ -616,7 +558,7 @@ delimiters to make it more human readable
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line139">line 139</a>
+        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line136">line 136</a>
     </li></ul></dd>
     
 
@@ -658,6 +600,165 @@ delimiters to make it more human readable
     <dd>
         
 <span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".decode"><span class="type-signature">(static) </span>decode<span class="signature">(txref)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Convert a txref to ttransaction data
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>txref</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Txref.html">Txref</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line174">line 174</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The transaction data encoded in the txref
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
 
 
     </dd>
@@ -845,7 +946,7 @@ delimiters to make it more human readable
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line40">line 40</a>
+        <a href="txref.js.html">txref.js</a>, <a href="txref.js.html#line37">line 37</a>
     </li></ul></dd>
     
 
@@ -913,13 +1014,13 @@ delimiters to make it more human readable
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BlockcypherDao.html">BlockcypherDao</a></li><li><a href="Txref.html">Txref</a></li></ul><h3>Global</h3><ul><li><a href="global.html#punycode">punycode</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blockchain.html">Blockchain</a></li><li><a href="BtcrReader.html">BtcrReader</a></li><li><a href="Txref.html">Txref</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 11:42:22 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Mar 17 2020 17:08:17 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

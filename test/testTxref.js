@@ -64,13 +64,16 @@ describe('Txref',() => {
 		
 		//Run test data throught the decode function
 		testData.forEach((test) => {
+
 				it('decode ' + test.name, () => {
+
 					const data = Txref.decode(test.txref)
+					console.log(`data: ${data.chain} test: ${test.chain}`)
 					expect(data).to.eql({
-						'chain': test.chain,
-						'blockHeight': test.blockHeight,
-						'blockIndex': test.blockIndex,
-						'utxoIndex': test.utxoIndex
+						'chain': test.chain
+						,'blockHeight': test.blockHeight
+						,'blockIndex': test.blockIndex
+						,'utxoIndex': test.utxoIndex
 					})
 				})
 		})

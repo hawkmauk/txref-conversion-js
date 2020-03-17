@@ -26,7 +26,8 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const bech32 = require('./bech32')
+            <pre class="prettyprint source linenums"><code>const bech32 = require('bech32')
+const Blockchain = require('./blockchain')
 
 const TYPE_MAINNET = 0x03
 const TYPE_MAINNET_EXT = 0x04
@@ -39,16 +40,12 @@ const TYPE_TESTNET_EXT=0x07
 class Txref{
 
 	/**
-	 * Chain identifier
-	 */
-	static CHAIN_MAINNET = 'mainnet'
-	static CHAIN_TESTNET = 'testnet'
-
-	/**
 	 * Human readable part of bech32 data
 	 */
-	static BECH32_HRP_MAINNET = 'tx'
-	static BECH32_HRP_TESTNET = 'txtest'
+	//static BECH32_HRP_MAINNET = 'tx'
+	//static BECH32_HRP_TESTNET = 'txtest'
+	static BECH32_HRP_MAINNET = 'bc'
+	static BECH32_HRP_TESTNET = 'tb'
 
 	/**
 	 * Encode transaction location data into a txref
@@ -68,7 +65,7 @@ class Txref{
 	static encode(chain, blockHeight, blockIndex, utxoIndex){
 		
 		//check for valid chain
-		if (chain === Txref.CHAIN_MAINNET || chain === Txref.CHAIN_MAINNET)
+		if (chain !== Blockchain.BTC_MAINNET &amp;&amp; chain !== Blockchain.BTC_TESTNET)
 			throw new Error('Invalid chain')
 
 		//check for valid blockHeight
@@ -81,7 +78,6 @@ class Txref{
 
 		//encode the txref
 		const bTxref = Txref.binaryEncode(chain,blockHeight,blockIndex,utxoIndex)
-
 		//convert the binary data to a formatted txref
 		const txref = Txref.binaryToString(bTxref)
 
@@ -114,83 +110,144 @@ class Txref{
 	 */
 	static binaryEncode(chain,blockHeight,blockIndex,utxoIndex){
 
+		let type,words
 
-		let type,data
-
-		//Set the txref type and initialise binary data
+		//Set the txref type and initialise binary data.  This is returned as *words* for the
+		//beck32 library so we define it here to keep it consistent
 		if(utxoIndex !== undefined){
-			type = (chain === Txref.CHAIN_MAINNET) ? TYPE_MAINNET_EXT : TYPE_TESTNET_EXT
-			data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+			type = (chain === Blockchain.BTC_MAINNET) ? TYPE_MAINNET_EXT : TYPE_TESTNET_EXT
+			words = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 		} else {
-			type = (chain === Txref.CHAIN_MAINNET) ? TYPE_MAINNET : TYPE_TESTNET
-			data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+			type = (chain === Blockchain.BTC_MAINNET) ? TYPE_MAINNET : TYPE_TESTNET
+			words = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 		}
 
 
 		//set the type bit in the data
-		data[0] = type
+		words[0] = type
 
 		//encode the blockHeight
-		data[1] |= ((blockHeight &amp; 0xF) &lt;&lt; 1)
-		data[2] |= ((blockHeight &amp; 0x1F0) >> 4)
-		data[1] |= ((blockHeight &amp; 0xF) &lt;&lt; 1);
-		data[2] |= ((blockHeight &amp; 0x1F0) >> 4);
-		data[3] |= ((blockHeight &amp; 0x3E00) >> 9);
-		data[4] |= ((blockHeight &amp; 0x7C000) >> 14);
-		data[5] |= ((blockHeight &amp; 0xF80000) >> 19);
+		words[1] |= ((blockHeight &amp; 0xF) &lt;&lt; 1);
+		words[2] |= ((blockHeight &amp; 0x1F0) >> 4);
+		words[3] |= ((blockHeight &amp; 0x3E00) >> 9);
+		words[4] |= ((blockHeight &amp; 0x7C000) >> 14);
+		words[5] |= ((blockHeight &amp; 0xF80000) >> 19);
 
 		//encode the blockIndex
-		data[6] |= (blockIndex &amp; 0x1F);
-		data[7] |= ((blockIndex &amp; 0x3E0) >> 5);
-  		data[8] |= ((blockIndex &amp; 0x7C00) >> 10);
+		words[6] |= (blockIndex &amp; 0x1F);
+		words[7] |= ((blockIndex &amp; 0x3E0) >> 5);
+  		words[8] |= ((blockIndex &amp; 0x7C00) >> 10);
 
 		//encode the utxoIndex
 		if(utxoIndex != undefined) {
-			data[9]  |=  (utxoIndex &amp; 0x1F);
-    		data[10] |= ((utxoIndex &amp; 0x3E0) >> 5);
-    		data[11] |= ((utxoIndex &amp; 0x7C00) >> 10);
+			words[9]  |=  (utxoIndex &amp; 0x1F);
+    		words[10] |= ((utxoIndex &amp; 0x3E0) >> 5);
+    		words[11] |= ((utxoIndex &amp; 0x7C00) >> 10);
 		}
 
-		return data
+		return words
 	}
 
 	/**
 	 * Convert binary txref to a bech32 formatted string with
-	 * delimiters to make it more human readable
+	 * delimiters to make it more human readable.
 	 *
-	 * @param {binary} data
-	 *   The binary encoded txref
+	 * The name 'words' is used throughout in keeping with the Bech32
+	 * naming in object returned from the Bech32 library:
+	 *	`{ prefix: xx, words: xxxxxxx }`
 	 *
+	 * @param {binary} words
+	 *   The binary encoded bech32 txref.
 	 * @return {string} txref
 	 *   The txref in human readable form
 	 */
-	static binaryToString(data){
+	static binaryToString(words){
 
-		//determine the chain from the first data byte and set 
-		//the human readable part
-		const bech32hrp = (data[0] === TYPE_MAINNET || data[0] === TYPE_MAINNET_EXT) ?
+		//determine the chain from the first 'words' byte and set 
+		//the 'prefix' which is the human readable part
+		const prefix = (words[0] === TYPE_MAINNET || words[0] === TYPE_MAINNET_EXT) ?
 			Txref.BECH32_HRP_MAINNET : Txref.BECH32_HRP_TESTNET
 		
 		//encode the human readable part and data as bech32
-		const bech32encoded = bech32.encode(bech32hrp, data)
+		const bech32encoded = bech32.encode(prefix, words)
 
 		//add delimiters to the bech32encoded string
 		const splitIndex = 4
 		const delimiter = '-'
 		
 		//Initialise the txref
-		const dataStart = bech32hrp.length
-		let txref = bech32encoded.substring(0, dataStart) + ':'
-			+ bech32encoded.substring(dataStart, dataStart + splitIndex)
+		const wordsStart = prefix.length + 1
+		let txref = bech32encoded.substring(0, wordsStart) + ':'
+			+ bech32encoded.substring(wordsStart, wordsStart + splitIndex)
 		
 		//Add to txref remaining data with delimiter
-		//Initialise with dataStart + splitIndex as we've already added the human
-		//readable part and the first part of the data in the step above
-		for(var i = dataStart + splitIndex; i &lt; bech32encoded.length; i += splitIndex){
+		//Initialise with wordsStart + splitIndex as we've already added the human
+		//readable part (prefix) and the first part of the data in the step above
+		for(var i = wordsStart + splitIndex; i &lt; bech32encoded.length + 1; i += splitIndex){
 			txref += delimiter + bech32encoded.substring(i, i + splitIndex)
 		}
 
 		return txref
+	}
+
+
+	/**
+	 * Convert a txref to ttransaction data
+	 *
+	 * @param {Txref} txref
+	 *
+	 * @return {{chain, blockHeight, blockIndex, utxoIndex}}
+	 * 	The transaction data encoded in the txref
+	 */
+	static decode(txref){
+
+		let chain, blockHeight, blockIndex, utxoIndex
+
+		//check for valid txref
+//		if (! txref.match(/^tx(test)?1:[a-z0-9]{4}(-[a-z0-9]{4}){2}/g)){
+//			throw new Error('Invalid txref')
+//		}
+
+		if (! txref.match(/^(bc|tb)?1:[a-z0-9]{4}(-[a-z0-9]{4}){2}/g)){
+			throw new Error('Invalid txref')
+		}
+
+		//strip the delimiter formatting
+		const unformattedTxref = txref.replace(/[-:]/g, '')
+
+		//convert the string to binary data
+		const bTxref = bech32.decode(unformattedTxref)
+
+		//decode the blockHeight
+		blockHeight = (bTxref.words[1] >> 1)
+		blockHeight |= (bTxref.words[2] &lt;&lt; 4)
+		blockHeight |= (bTxref.words[3] &lt;&lt; 9)
+		blockHeight |= (bTxref.words[4] &lt;&lt; 14)
+		blockHeight |= (bTxref.words[5] &lt;&lt; 19)
+
+		//decode the blockIndex
+		blockIndex = bTxref.words[6]
+		blockIndex |= (bTxref.words[7] &lt;&lt; 5)
+		blockIndex |= (bTxref.words[8] &lt;&lt; 10)
+
+		//decode the utxoIndex
+		if(bTxref.words.length == 12){
+			utxoIndex = bTxref.words[9]
+			utxoIndex |= (bTxref.words[10] &lt;&lt; 5)
+			utxoIndex |= (bTxref.words[11] &lt;&lt; 10)
+		}
+
+		//decode the chain
+		(bTxref.prefix === Txref.BECH32_HRP_MAINNET) ?
+			chain = Blockchain.BTC_MAINNET : chain = Blockchain.BTC_TESTNET
+
+		return {
+			chain,
+			blockHeight,
+			blockIndex,
+			utxoIndex
+		}
+
 	}
 }
 
@@ -205,13 +262,13 @@ module.exports = Txref
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BlockcypherDao.html">BlockcypherDao</a></li><li><a href="Txref.html">Txref</a></li></ul><h3>Global</h3><ul><li><a href="global.html#punycode">punycode</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blockchain.html">Blockchain</a></li><li><a href="BtcrReader.html">BtcrReader</a></li><li><a href="Txref.html">Txref</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 11:42:22 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Mar 17 2020 17:08:17 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

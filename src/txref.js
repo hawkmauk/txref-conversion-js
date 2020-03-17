@@ -1,4 +1,4 @@
-const bech32 = require('./bech32')
+const bech32 = require('bech32')
 const Blockchain = require('./blockchain')
 
 const TYPE_MAINNET = 0x03
@@ -14,8 +14,10 @@ class Txref{
 	/**
 	 * Human readable part of bech32 data
 	 */
-	static BECH32_HRP_MAINNET = 'tx'
-	static BECH32_HRP_TESTNET = 'txtest'
+	//static BECH32_HRP_MAINNET = 'tx'
+	//static BECH32_HRP_TESTNET = 'txtest'
+	static BECH32_HRP_MAINNET = 'bc'
+	static BECH32_HRP_TESTNET = 'tb'
 
 	/**
 	 * Encode transaction location data into a txref
@@ -48,7 +50,6 @@ class Txref{
 
 		//encode the txref
 		const bTxref = Txref.binaryEncode(chain,blockHeight,blockIndex,utxoIndex)
-
 		//convert the binary data to a formatted txref
 		const txref = Txref.binaryToString(bTxref)
 
@@ -81,76 +82,80 @@ class Txref{
 	 */
 	static binaryEncode(chain,blockHeight,blockIndex,utxoIndex){
 
-		let type,data
+		let type,words
 
-		//Set the txref type and initialise binary data
+		//Set the txref type and initialise binary data.  This is returned as *words* for the
+		//beck32 library so we define it here to keep it consistent
 		if(utxoIndex !== undefined){
 			type = (chain === Blockchain.BTC_MAINNET) ? TYPE_MAINNET_EXT : TYPE_TESTNET_EXT
-			data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+			words = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 		} else {
 			type = (chain === Blockchain.BTC_MAINNET) ? TYPE_MAINNET : TYPE_TESTNET
-			data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+			words = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 		}
 
 
 		//set the type bit in the data
-		data[0] = type
+		words[0] = type
 
 		//encode the blockHeight
-		data[1] |= ((blockHeight & 0xF) << 1);
-		data[2] |= ((blockHeight & 0x1F0) >> 4);
-		data[3] |= ((blockHeight & 0x3E00) >> 9);
-		data[4] |= ((blockHeight & 0x7C000) >> 14);
-		data[5] |= ((blockHeight & 0xF80000) >> 19);
+		words[1] |= ((blockHeight & 0xF) << 1);
+		words[2] |= ((blockHeight & 0x1F0) >> 4);
+		words[3] |= ((blockHeight & 0x3E00) >> 9);
+		words[4] |= ((blockHeight & 0x7C000) >> 14);
+		words[5] |= ((blockHeight & 0xF80000) >> 19);
 
 		//encode the blockIndex
-		data[6] |= (blockIndex & 0x1F);
-		data[7] |= ((blockIndex & 0x3E0) >> 5);
-  		data[8] |= ((blockIndex & 0x7C00) >> 10);
+		words[6] |= (blockIndex & 0x1F);
+		words[7] |= ((blockIndex & 0x3E0) >> 5);
+  		words[8] |= ((blockIndex & 0x7C00) >> 10);
 
 		//encode the utxoIndex
 		if(utxoIndex != undefined) {
-			data[9]  |=  (utxoIndex & 0x1F);
-    		data[10] |= ((utxoIndex & 0x3E0) >> 5);
-    		data[11] |= ((utxoIndex & 0x7C00) >> 10);
+			words[9]  |=  (utxoIndex & 0x1F);
+    		words[10] |= ((utxoIndex & 0x3E0) >> 5);
+    		words[11] |= ((utxoIndex & 0x7C00) >> 10);
 		}
 
-		return data
+		return words
 	}
 
 	/**
 	 * Convert binary txref to a bech32 formatted string with
-	 * delimiters to make it more human readable
+	 * delimiters to make it more human readable.
 	 *
-	 * @param {binary} data
-	 *   The binary encoded txref
+	 * The name 'words' is used throughout in keeping with the Bech32
+	 * naming in object returned from the Bech32 library:
+	 *	`{ prefix: xx, words: xxxxxxx }`
 	 *
+	 * @param {binary} words
+	 *   The binary encoded bech32 txref.
 	 * @return {string} txref
 	 *   The txref in human readable form
 	 */
-	static binaryToString(data){
+	static binaryToString(words){
 
-		//determine the chain from the first data byte and set 
-		//the human readable part
-		const bech32hrp = (data[0] === TYPE_MAINNET || data[0] === TYPE_MAINNET_EXT) ?
+		//determine the chain from the first 'words' byte and set 
+		//the 'prefix' which is the human readable part
+		const prefix = (words[0] === TYPE_MAINNET || words[0] === TYPE_MAINNET_EXT) ?
 			Txref.BECH32_HRP_MAINNET : Txref.BECH32_HRP_TESTNET
 		
 		//encode the human readable part and data as bech32
-		const bech32encoded = bech32.encode(bech32hrp, data)
+		const bech32encoded = bech32.encode(prefix, words)
 
 		//add delimiters to the bech32encoded string
 		const splitIndex = 4
 		const delimiter = '-'
 		
 		//Initialise the txref
-		const dataStart = bech32hrp.length + 1
-		let txref = bech32encoded.substring(0, dataStart) + ':'
-			+ bech32encoded.substring(dataStart, dataStart + splitIndex)
+		const wordsStart = prefix.length + 1
+		let txref = bech32encoded.substring(0, wordsStart) + ':'
+			+ bech32encoded.substring(wordsStart, wordsStart + splitIndex)
 		
 		//Add to txref remaining data with delimiter
-		//Initialise with dataStart + splitIndex as we've already added the human
-		//readable part and the first part of the data in the step above
-		for(var i = dataStart + splitIndex; i < bech32encoded.length + 1; i += splitIndex){
+		//Initialise with wordsStart + splitIndex as we've already added the human
+		//readable part (prefix) and the first part of the data in the step above
+		for(var i = wordsStart + splitIndex; i < bech32encoded.length + 1; i += splitIndex){
 			txref += delimiter + bech32encoded.substring(i, i + splitIndex)
 		}
 
@@ -171,7 +176,11 @@ class Txref{
 		let chain, blockHeight, blockIndex, utxoIndex
 
 		//check for valid txref
-		if (! txref.match(/^tx(test)?1:[a-z0-9]{4}(-[a-z0-9]{4}){2}/g)){
+//		if (! txref.match(/^tx(test)?1:[a-z0-9]{4}(-[a-z0-9]{4}){2}/g)){
+//			throw new Error('Invalid txref')
+//		}
+
+		if (! txref.match(/^(bc|tb)?1:[a-z0-9]{4}(-[a-z0-9]{4}){2}/g)){
 			throw new Error('Invalid txref')
 		}
 
@@ -182,26 +191,26 @@ class Txref{
 		const bTxref = bech32.decode(unformattedTxref)
 
 		//decode the blockHeight
-		blockHeight = (bTxref.data[1] >> 1)
-		blockHeight |= (bTxref.data[2] << 4)
-		blockHeight |= (bTxref.data[3] << 9)
-		blockHeight |= (bTxref.data[4] << 14)
-		blockHeight |= (bTxref.data[5] << 19)
+		blockHeight = (bTxref.words[1] >> 1)
+		blockHeight |= (bTxref.words[2] << 4)
+		blockHeight |= (bTxref.words[3] << 9)
+		blockHeight |= (bTxref.words[4] << 14)
+		blockHeight |= (bTxref.words[5] << 19)
 
 		//decode the blockIndex
-		blockIndex = bTxref.data[6]
-		blockIndex |= (bTxref.data[7] << 5)
-		blockIndex |= (bTxref.data[8] << 10)
+		blockIndex = bTxref.words[6]
+		blockIndex |= (bTxref.words[7] << 5)
+		blockIndex |= (bTxref.words[8] << 10)
 
 		//decode the utxoIndex
-		if(bTxref.data.length == 12){
-			utxoIndex = bTxref.data[9]
-			utxoIndex |= (bTxref.data[10] << 5)
-			utxoIndex |= (bTxref.data[11] << 10)
+		if(bTxref.words.length == 12){
+			utxoIndex = bTxref.words[9]
+			utxoIndex |= (bTxref.words[10] << 5)
+			utxoIndex |= (bTxref.words[11] << 10)
 		}
 
 		//decode the chain
-		(bTxref.hrp === Txref.BECH32_HRP_MAINNET) ?
+		(bTxref.prefix === Txref.BECH32_HRP_MAINNET) ?
 			chain = Blockchain.BTC_MAINNET : chain = Blockchain.BTC_TESTNET
 
 		return {
