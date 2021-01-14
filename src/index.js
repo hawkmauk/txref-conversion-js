@@ -1,32 +1,31 @@
-const testData = require('../test/data')
-const TxReader = require('./txReader')
+/*
+ *  EXAMPLES
+ */
 const Bech32hrp = require('../src/bech32hrp')
 const {DaoType, DaoFactory} = require('./dao/daoFactory')
 
+/**
+ *
+ * TxReader
+ *
+ * Create a TxReader to use the blockstream.info site
+ * to return 
+ */
+const TxReader = require('./txReader')
 const reader = new TxReader(DaoType.BLOCKSTREAM)
 
-//const txid = testData[6].txid
-//const txref = testData[6].txref
-//const chain = testData[6].chain
-//
-//console.log(testData[6].chain)
-//console.log(testData[6].txref)
-//console.log(testData[6].txid)
+reader.getTxref(Bech32hrp.BTC_MAINNET,'0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098')
+    .then((txref) => console.log(txref))
+// returns tx1:rzqq-qqqq-qhlr-5ct
 
-//reader.getTxref(chain,txid)
-//    .then((txref) => {
-//        console.log(`getTxref ${txref}`)
-//    })
-//reader.getTxid(txref)
-//    .then((txid) => {
-//        console.log(`getTxid ${txid}`)
-//    })
-//reader.getTx(txref)
-//    .then((tx) => {
-//        console.log(`getTx ${tx}`)
-//    })
+reader.getTxid('tx1:rzqq-qqqq-qhlr-5ct')
+    .then((txid) => console.log(txid))
+// returns 0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098
 
-const dao = DaoFactory.get(DaoType.BLOCKSTREAM,Bech32hrp.BTC_MAINNET)
-dao.getTxByIndex(467883,2355)
-    .then((tx) => console.log(`found ${tx}`))
-    .catch((error) => console.log(error))
+reader.getTx('tx1:rzqq-qqqq-qhlr-5ct')
+    .then((tx) => console.log(tx))
+// returns {
+//      txid: '0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098',
+//      block_height: 1,
+//      block_index: 0
+// }

@@ -75,8 +75,14 @@ TxReader.prototype.getTxid = async function(txref){
  */
 TxReader.prototype.getTx = async function(txref){
 
-    //check if a txref has been provided
-    return "TODO"
+    //get the tx details from the chain
+    const txdata = Txref.decode(txref)
+    //get a dao from the factory
+    const dao = DaoFactory.get(this.provider, txdata.chain)
+    //get the txid from the chain
+    const tx = await dao.getTxByIndex(txdata.block_height, txdata.block_index)
+
+    return tx
 }
 
 /**
